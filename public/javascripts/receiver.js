@@ -1,4 +1,5 @@
 var socket = null;
+var transferredData = '';
 
 $(document).ready(function() {
   setUpWebSocket();
@@ -22,6 +23,23 @@ function handleWebSocketMessage(data) {
   var message = JSON.parse(data);
   if (message.type === 'urlRequest') {
     console.log('url: ' + message.content.url);
+  } else if (message.type === 'transferStarted') {
+    console.log('transferStarted');
+  } else if (message.type === 'transferringData') {
+    console.log('transferringData');
+    transferredData += message.content.data;
+  } else if (message.type === 'transferEnded') {
+    console.log('transferEnded');
+
+    $image = $(document.createElement('button'));
+    $image.text('click');
+    //$image.attr('href', 'data:image/jpeg;base64,'+transferredData);
+    //$image.text('link');
+    $image.click(function() {
+      console.log('aaaa');
+      location.href = 'data:application/octet-stream;base64,'+transferredData;
+    });
+    $('#displayArea').append($image);
   }
 }
 

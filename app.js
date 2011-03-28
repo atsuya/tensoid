@@ -103,7 +103,13 @@ listener.on('connection', function(client) {
       addSender(url, client);
     } else if (message.type === 'receiverConnected') {
       addReceiver(message.content.url, client);
-      startTransferring(message.content.url);
+      requestTransferring(message.content.url);
+    } else if (message.type === 'transferStarted') {
+      startTransferring(message.content.url, message.content);
+    } else if (message.type === 'transferringData') {
+      transferData(message.content.url, message.content);
+    } else if (message.type === 'transferEnded') {
+      endTransferring(message.content.url, message.content);
     }
   });
   client.on('disconnect', function() {
@@ -129,7 +135,7 @@ function addReceiver(url, client) {
   }
 }
 
-function startTransferring(url) {
+function requestTransferring(url) {
   console.log(connections);
 
   if (url in connections) {
@@ -137,6 +143,39 @@ function startTransferring(url) {
     var sender = listener.clients[sessionId];
     sender.send(JSON.stringify({
       type: 'transferRequest'
+    }));
+  }
+}
+
+function startTransferring(url, content) {
+  if (url in connections) {
+    var sessionId = connections[url].receivers[0];
+    var receiver = listener.clients[sessionId];
+    receiver.send(JSON.stringify({
+      type: 'transferStarted'
+    }));
+  }
+}
+
+function transferData(url, content) {
+  if (url in connections) {
+    var sessionId = connections[url].receivers[0];
+    var receiver = listener.clients[sessionId];
+    receiver.send(JSON.stringify({
+      type: 'transferringData',
+      content: {
+        data: content.data
+      }
+    }));
+  }
+}
+
+function endTransferring(url, content) {
+  if (url in connections) {
+    var sessionId = connections[url].receivers[0];
+    var receiver = listener.clients[sessionId];
+    receiver.send(JSON.stringify({
+      type: 'transferEnded'
     }));
   }
 }

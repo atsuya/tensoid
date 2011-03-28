@@ -1,5 +1,6 @@
 var filesToSend = [];
 var socket = null;
+var url = null;
 
 $(document).ready(function() {
   /*
@@ -63,6 +64,29 @@ function readFile(file) {
 function uploadFile(contentType, data) {
   console.log('contenttype: ' + contentType);
   console.log('data: ' + data);
+
+  if (socket) {
+    socket.send(JSON.stringify({
+      type: 'transferStarted',
+      content: {
+        url: url,
+        contentType: contentType
+      }
+    }));
+    socket.send(JSON.stringify({
+      type: 'transferringData',
+      content: {
+        url: url,
+        data: data
+      }
+    }));
+    socket.send(JSON.stringify({
+      type: 'transferEnded',
+      content: {
+        url: url
+      }
+    }));
+  }
 }
 
 function setUpWebSocket() {
@@ -82,7 +106,15 @@ function handleWebSocketMessage(data) {
   var message = JSON.parse(data);
   if (message.type === 'urlRequest') {
     console.log('url: ' + message.content.url);
+    url = message.content.url;
   } else if (message.type === 'transferRequest') {
     console.log('oh yea, ready to send file!');
+    transferFiles();
+  }
+}
+
+function transferFiles() {
+  for (var i = 0; i < filesToSend.length; i++) {
+    readFile(filesToSend[i]);
   }
 }
