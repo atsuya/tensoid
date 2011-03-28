@@ -1,0 +1,5 @@
+<% if (resource.type == 'css') { %>
+  <link rel="stylesheet" href="<%= resource.uri %>">
+<% } else if (resource.type == 'javascript') { %>
+  <script src="<%= resource.uri %>"></script>
+<% } %>
