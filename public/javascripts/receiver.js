@@ -50,14 +50,15 @@ function handleWebSocketMessage(data) {
     console.log('transferEnded');
 
     console.log(contentType);
+    console.log(transferredData);
 
-    var pairs = transferredData.split(',');
+    //var pairs = transferredData.split(',');
     //console.log(transferredData);
     //console.log('eeeeeeeeeeeeeeeeeee');
 
-    $image = $(document.createElement('a'));
-    $image.text('click');
-    $image.attr('href', 'data:application/octet-stream;base64,'+pairs[1]);
+    $image = $(document.createElement('img'));
+    //$image.text('click');
+    $image.attr('src', 'data:image/jpeg;base64,'+transferredData);
     //$image.text('link');
     /*
     $image.click(function() {

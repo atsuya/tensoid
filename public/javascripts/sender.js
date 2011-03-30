@@ -2,7 +2,7 @@ var filesToSend = [];
 var socket = null;
 var url = null;
 var blobCurrentPosition = 0;
-var BLOB_SIZE = 102400;
+var BLOB_SIZE = (3 * 10240) - 1;
 var file = null;
 var test = '';
 var totalFile = '';
@@ -65,9 +65,10 @@ function readFile(file) {
     }));
   }
 
-  var reader = new FileReader();
-  reader.onload = function(event) {
-    totalFile = event.target.result;
+  
+  //var reader = new FileReader();
+  //reader.onload = function(event) {
+  //  totalFile = event.target.result;
 
     /*
     $image = $(document.createElement('img'));
@@ -75,7 +76,7 @@ function readFile(file) {
     $('#displayArea').append($image);
     */
 
-    sendBytes();
+    //sendBytes();
     /*
     //console.log(event.target.result);
     var pairs = event.target.result.split(',');
@@ -84,8 +85,8 @@ function readFile(file) {
 
     uploadFile(contentType, pairs[1]);
     */
-  };
-  reader.readAsDataURL(file);
+  //};
+  //reader.readAsDataURL(file);
 
   /*
   var reader = new FileReader();
@@ -124,13 +125,13 @@ function readFile(file) {
   };
   */
 
-  //blobCurrentPosition = 0;
-  //readBlob(null, file);
+  blobCurrentPosition = 0;
+  readBlob(null, file);
 }
 
 function readBlob(reader, file) {
   if (blobCurrentPosition >= (file.size - 1)) {
-    console.log(test);
+    //console.log(test);
 
     $image = $(document.createElement('img'));
     $image.attr('src', test);
@@ -159,14 +160,35 @@ function readBlob(reader, file) {
   reader2.onloadend = function(event) {
     console.log('here');
     if (event.target.readyState == FileReader.DONE) {
-      console.log('reading: ');
+      console.log('reading: '+event.target.result.length+', '+(event.target.result.length % 3));
+
+      var base64 = '';
+      for(var i = 0; i * 3 < event.target.result.length; i++) {
+        var bytes = event.target.result.substr((i*3), 3);
+        var firstFirst = bytes[0] & 0xfc;
+        var first = firstFirst >>> 2;
+
+        var secondFirst = bytes[0] & 0x03;
+        var secondSecond = bytes[1] & 0xf0;
+        var second = (secondFirst << 4) | (secondSecond >>> 4);
+
+        var thirdFirst = bytes[1] & 0x0f;
+        var thirdSecond = bytes[2] & 0xc0;
+        var third = (thirdFirst << 2) | (thirdSecond >>> 6);
+
+        var fourth = bytes[2] & 0x3f;
+
+        base64 += String.fromCharCode(first)+String.fromCharCode(second)+String.fromCharCode(third)+String.fromCharCode(fourth);
+      }
+
+      console.log('base64: '+base64);
 
       if (socket) {
         socket.send(JSON.stringify({
           type: 'transferringData',
           content: {
             url: url,
-            data: event.target.result
+            data: base64
           }
         }));
       }
@@ -195,7 +217,7 @@ function readBlob(reader, file) {
       */
     }
   };
-  reader2.readAsDataURL(blob);
+  reader2.readAsBinaryString(blob);
 }
 
 /*
@@ -251,7 +273,7 @@ function handleWebSocketMessage(data) {
     transferFiles();
   } else if (message.type === 'transferringData') {
     console.log('sending more.');
-    sendBytes();
+    readBlob(null, file);
   }
 }
 
