@@ -2,10 +2,15 @@ var filesToSend = [];
 var socket = null;
 var url = null;
 var blobCurrentPosition = 0;
-var BLOB_SIZE = (3 * 10240) - 1;
+var BLOB_SIZE = (3 * 512) - 1;
 var file = null;
 var test = '';
 var totalFile = '';
+var base64Table = [
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
+];
 
 $(document).ready(function() {
   /*
@@ -133,9 +138,9 @@ function readBlob(reader, file) {
   if (blobCurrentPosition >= (file.size - 1)) {
     //console.log(test);
 
-    $image = $(document.createElement('img'));
-    $image.attr('src', test);
-    $('#displayArea').append($image);
+    //$image = $(document.createElement('img'));
+    //$image.attr('src', 'data:image/jpeg;base64,'+test);
+    //$('#displayArea').append($image);
 
     if (socket) {
       socket.send(JSON.stringify({
@@ -160,28 +165,43 @@ function readBlob(reader, file) {
   reader2.onloadend = function(event) {
     console.log('here');
     if (event.target.readyState == FileReader.DONE) {
-      console.log('reading: '+event.target.result.length+', '+(event.target.result.length % 3));
+      console.log('reading: '+blobCurrentPosition+'/'+file.size);
+      console.log('mod: '+(event.target.result.length % 3));
 
       var base64 = '';
-      for(var i = 0; i * 3 < event.target.result.length; i++) {
-        var bytes = event.target.result.substr((i*3), 3);
-        var firstFirst = bytes[0] & 0xfc;
-        var first = firstFirst >>> 2;
+      for(var i = 0; i < event.target.result.length; i += 3) {
+        var byte1 = ((i+0) < event.target.result.length) ? event.target.result[(i+0)] : null;
+        var byte2 = ((i+1) < event.target.result.length) ? event.target.result[(i+1)] : null;
+        var byte3 = ((i+2) < event.target.result.length) ? event.target.result[(i+2)] : null;
 
-        var secondFirst = bytes[0] & 0x03;
-        var secondSecond = bytes[1] & 0xf0;
-        var second = (secondFirst << 4) | (secondSecond >>> 4);
+        var firstFirst = byte1.charCodeAt(0) & 0xfc;
+        var first = base64Table[(firstFirst >>> 2)];
 
-        var thirdFirst = bytes[1] & 0x0f;
-        var thirdSecond = bytes[2] & 0xc0;
-        var third = (thirdFirst << 2) | (thirdSecond >>> 6);
+        var secondFirst = byte1.charCodeAt(0) & 0x03;
+        var secondSecond = (byte2) ? (byte2.charCodeAt(0) & 0xf0) : 0;
+        var second = base64Table[((secondFirst << 4) | (secondSecond >>> 4))];
+        var third = '';
+        var fourth = '';
 
-        var fourth = bytes[2] & 0x3f;
+        if (byte2) {
+          var thirdFirst = byte2.charCodeAt(0) & 0x0f;
+          var thirdSecond = (byte3) ? byte3.charCodeAt(0) & 0xc0 : 0;
+          third = base64Table[((thirdFirst << 2) | (thirdSecond >>> 6))];
 
-        base64 += String.fromCharCode(first)+String.fromCharCode(second)+String.fromCharCode(third)+String.fromCharCode(fourth);
+          if (byte3) {
+            fourth = base64Table[(byte3.charCodeAt(0) & 0x3f)];
+          } else {
+            fourth = '=';
+          }
+        } else {
+          third = '=';
+          fourth = '=';
+        }
+
+        base64 += first+second+third+fourth;
       }
 
-      console.log('base64: '+base64);
+      //console.log('base64: '+base64);
 
       if (socket) {
         socket.send(JSON.stringify({
@@ -193,10 +213,10 @@ function readBlob(reader, file) {
         }));
       }
 
-      test += event.target.result;
+      test += base64;
 
 
-      blobCurrentPosition += BLOB_SIZE;
+      blobCurrentPosition += BLOB_SIZE + 1;
       /*
       if (blobCurrentPosition < (file.size - 1)) {
         console.log('vvvv');

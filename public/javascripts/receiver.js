@@ -50,22 +50,20 @@ function handleWebSocketMessage(data) {
     console.log('transferEnded');
 
     console.log(contentType);
-    console.log(transferredData);
+    //console.log(transferredData);
 
     //var pairs = transferredData.split(',');
     //console.log(transferredData);
     //console.log('eeeeeeeeeeeeeeeeeee');
 
-    $image = $(document.createElement('img'));
+    $image = $(document.createElement('button'));
     //$image.text('click');
-    $image.attr('src', 'data:image/jpeg;base64,'+transferredData);
+    //$image.attr('src', 'data:image/jpeg;base64,'+transferredData);
     //$image.text('link');
-    /*
     $image.click(function() {
       console.log('aaaa');
-      location.href = 'data:application/octet-stream;base64,'+pairs[1];
+      location.href = 'data:application/octet-stream;base64,'+transferredData;
     });
-    */
     $('#displayArea').append($image);
   }
 }
