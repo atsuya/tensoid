@@ -50,20 +50,34 @@ function handleWebSocketMessage(data) {
     console.log('transferEnded');
 
     console.log(contentType);
+
+    var binary = window.atob(transferredData);
+    var buffer = new ArrayBuffer(binary.length);
+    var view = new Uint8Array(buffer);
+    for (var i = 0, len = binary.length; i < len; ++i) {
+      view[i] = binary.charCodeAt(i);
+    }
+    
+
+    var blobBuilder = new WebKitBlobBuilder();
+    blobBuilder.append(buffer);
+    var blobUrl = window.webkitURL.createObjectURL(blobBuilder.getBlob());
+    console.log('url: '+blobUrl);
+
     //console.log(transferredData);
 
     //var pairs = transferredData.split(',');
     //console.log(transferredData);
     //console.log('eeeeeeeeeeeeeeeeeee');
 
-    $image = $(document.createElement('button'));
-    //$image.text('click');
-    //$image.attr('src', 'data:image/jpeg;base64,'+transferredData);
+    $image = $(document.createElement('a'));
+    $image.text('click');
+    $image.attr('href', blobUrl);
     //$image.text('link');
-    $image.click(function() {
-      console.log('aaaa');
-      location.href = 'data:application/octet-stream;base64,'+transferredData;
-    });
+    //$image.click(function() {
+    //  console.log('aaaa');
+    //  location.href = 'data:application/octet-stream;base64,'+transferredData;
+    //});
     $('#displayArea').append($image);
   }
 }

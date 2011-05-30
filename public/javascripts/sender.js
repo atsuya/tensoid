@@ -2,7 +2,7 @@ var filesToSend = [];
 var socket = null;
 var url = null;
 var blobCurrentPosition = 0;
-var BLOB_SIZE = (3 * 512) - 1;
+var BLOB_SIZE = (3 * 1024) - 1;
 var file = null;
 var test = '';
 var totalFile = '';
@@ -153,43 +153,62 @@ function readBlob(reader, file) {
     return;
   }
 
-  var end = (blobCurrentPosition + BLOB_SIZE);
-  if ((file.size - 1) < end) {
-    end = (file.size - 1);
+  var end = (blobCurrentPosition + BLOB_SIZE + 1);
+  if (file.size < end) {
+    end = file.size;
   }
-  var length = (end - blobCurrentPosition) + 1;
-  var blob = file.slice(blobCurrentPosition, length);
+  console.log('s: '+blobCurrentPosition+', e: '+end);
+  //var length = (end - blobCurrentPosition) + 1;
+  var blob = file.webkitSlice(blobCurrentPosition, end, 'application/octet-stream');
   //reader.readAsDataURL(blob);
   
   var reader2 = new FileReader();
+  /*
+  reader2.onload = function(event) {
+    if (socket) {
+      socket.send(JSON.stringify({
+        type: 'transferringData',
+        content: {
+          url: url,
+          data: event.target.result
+        }
+      }));
+    }
+
+    test += event.target.result;
+    blobCurrentPosition += BLOB_SIZE + 1;
+  };
+  */
   reader2.onloadend = function(event) {
     console.log('here');
     if (event.target.readyState == FileReader.DONE) {
       console.log('reading: '+blobCurrentPosition+'/'+file.size);
       console.log('mod: '+(event.target.result.length % 3));
+      console.log(event);
 
-      var base64 = '';
+      var base64 = window.btoa(event.target.result);
+      /*
       for(var i = 0; i < event.target.result.length; i += 3) {
-        var byte1 = ((i+0) < event.target.result.length) ? event.target.result[(i+0)] : null;
-        var byte2 = ((i+1) < event.target.result.length) ? event.target.result[(i+1)] : null;
-        var byte3 = ((i+2) < event.target.result.length) ? event.target.result[(i+2)] : null;
+        var byte1 = ((i+0) < event.target.result.length) ? event.target.result[(i+0)].charCodeAt(0) : null;
+        var byte2 = ((i+1) < event.target.result.length) ? event.target.result[(i+1)].charCodeAt(0) : null;
+        var byte3 = ((i+2) < event.target.result.length) ? event.target.result[(i+2)].charCodeAt(0) : null;
 
-        var firstFirst = byte1.charCodeAt(0) & 0xfc;
+        var firstFirst = byte1 & 0xfc;
         var first = base64Table[(firstFirst >>> 2)];
 
-        var secondFirst = byte1.charCodeAt(0) & 0x03;
-        var secondSecond = (byte2) ? (byte2.charCodeAt(0) & 0xf0) : 0;
+        var secondFirst = byte1 & 0x03;
+        var secondSecond = (byte2 != null) ? (byte2 & 0xf0) : 0;
         var second = base64Table[((secondFirst << 4) | (secondSecond >>> 4))];
         var third = '';
         var fourth = '';
 
-        if (byte2) {
-          var thirdFirst = byte2.charCodeAt(0) & 0x0f;
-          var thirdSecond = (byte3) ? byte3.charCodeAt(0) & 0xc0 : 0;
+        if (byte2 != null) {
+          var thirdFirst = byte2 & 0x0f;
+          var thirdSecond = (byte3 != null) ? byte3 & 0xc0 : 0;
           third = base64Table[((thirdFirst << 2) | (thirdSecond >>> 6))];
 
-          if (byte3) {
-            fourth = base64Table[(byte3.charCodeAt(0) & 0x3f)];
+          if (byte3 != null) {
+            fourth = base64Table[(byte3 & 0x3f)];
           } else {
             fourth = '=';
           }
@@ -200,6 +219,7 @@ function readBlob(reader, file) {
 
         base64 += first+second+third+fourth;
       }
+      */
 
       //console.log('base64: '+base64);
 
@@ -217,27 +237,10 @@ function readBlob(reader, file) {
 
 
       blobCurrentPosition += BLOB_SIZE + 1;
-      /*
-      if (blobCurrentPosition < (file.size - 1)) {
-        console.log('vvvv');
-        readBlob(reader, file);
-      } else {
-        console.log('fffff');
-        if (socket) {
-          socket.send(JSON.stringify({
-            type: 'transferEnded',
-            content: {
-              url: url
-            }
-          }));
-        }
-
-        console.log(test);
-      }
-      */
     }
   };
   reader2.readAsBinaryString(blob);
+  //reader2.readAsDataURL(blob);
 }
 
 /*
