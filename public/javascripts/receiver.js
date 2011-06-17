@@ -1,8 +1,15 @@
 var socket = null;
 var transferredData = '';
 var contentType = '';
+var contentSize = 0;
+var readyToDraw = false;
 
 $(document).ready(function() {
+  $('#dropArea').hide();
+  
+  $('#progressBar').progressbar({ value: 0 });
+  $('#progressBar').hide();
+
   setUpWebSocket();
   notifySender();
 });
@@ -21,23 +28,38 @@ function handleWebSocketConnect() {
 }
 
 function handleWebSocketMessage(data) {
-  //console.log(data);
-
   var message = JSON.parse(data);
   if (message.type === 'urlRequest') {
-    console.log('url: ' + message.content.url);
+    //console.log('url: ' + message.content.url);
   } else if (message.type === 'transferStarted') {
-    console.log('transferStarted');
+    //console.log('transferStarted');
 
     contentType = message.content.contentType;
+    contentSize = message.content.contentSize;
+
+    readyToDraw = true;
+    $('#progressBar').show();
+    $('#progressBar').progressbar('value', 0);
   } else if (message.type === 'transferringData') {
-    console.log('transferringData');
+    //console.log('transferringData');
 
     //console.log(message.content.data);
 
     transferredData = transferredData + '' + message.content.data;
 
-    console.log('give me more!');
+    if (readyToDraw) {
+      readyToDraw = false;
+
+      progress = (transferredData.length / contentSize) * 100;
+      //console.log(progress);
+
+      window.setTimeout(function() {
+        $('#progressBar').progressbar('value', progress);
+        readyToDraw = true;
+      }, 500);
+    }
+
+    //console.log('give me more!');
     if (socket) {
       socket.send(JSON.stringify({
         type: 'transferringDataOk',
@@ -47,9 +69,9 @@ function handleWebSocketMessage(data) {
       }));
     }
   } else if (message.type === 'transferEnded') {
-    console.log('transferEnded');
+    //console.log('transferEnded');
 
-    console.log(contentType);
+    //console.log(contentType);
 
     var binary = window.atob(transferredData);
     var buffer = new ArrayBuffer(binary.length);
@@ -62,23 +84,15 @@ function handleWebSocketMessage(data) {
     var blobBuilder = new WebKitBlobBuilder();
     blobBuilder.append(buffer);
     var blobUrl = window.webkitURL.createObjectURL(blobBuilder.getBlob());
-    console.log('url: '+blobUrl);
-
-    //console.log(transferredData);
-
-    //var pairs = transferredData.split(',');
-    //console.log(transferredData);
-    //console.log('eeeeeeeeeeeeeeeeeee');
+    //console.log('url: '+blobUrl);
 
     $image = $(document.createElement('a'));
-    $image.text('click');
+    $image.text('File is Here!');
     $image.attr('href', blobUrl);
-    //$image.text('link');
-    //$image.click(function() {
-    //  console.log('aaaa');
-    //  location.href = 'data:application/octet-stream;base64,'+transferredData;
-    //});
-    $('#displayArea').append($image);
+
+    $('#progressBar').hide();
+    $('#dropArea').show();
+    $('#dropAreaText').append($image);
   }
 }
 

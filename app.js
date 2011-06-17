@@ -12,6 +12,7 @@ var app = module.exports = express.createServer();
 // Configuration
 
 app.configure(function() {
+  app.redirect('send', '/send');
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.use(express.logger());
@@ -51,6 +52,10 @@ app.dynamicHelpers({
 // Routes
 
 app.get('/', function(req, res) {
+  res.redirect('send');
+});
+
+app.get('/send', function(req, res) {
   req.session.resources = [
     { type: 'javascript', uri: '/socket.io/socket.io.js' },
     { type: 'css', uri: '/stylesheets/sender.css' },
@@ -63,8 +68,8 @@ app.get('/', function(req, res) {
   res.render('sender');
 });
 
-app.get('/:id', function(req, res) {
-  //console.log(req);
+app.get('/receive/:id', function(req, res) {
+  console.log(req);
 
   req.session.resources = [
     { type: 'javascript', uri: '/socket.io/socket.io.js' },
@@ -72,7 +77,7 @@ app.get('/:id', function(req, res) {
     { type: 'javascript', uri: '/javascripts/receiver.js' }
   ];
   req.session.variables = [
-    { name: 'requestUrl', value: "'http://localhost:3000/1'" },
+    { name: 'requestUrl', value: "'http://" + config.server.host + ':' + config.server.port + req.url + "'" },
     { name: 'webSocketHost', value: "'" + config.client.webSocket.host + "'" },
     { name: 'webSocketPort', value: config.client.webSocket.port }
   ];
@@ -127,7 +132,8 @@ listener.on('connection', function(client) {
 });
 
 function generateUrl() {
-  return 'http://' + config.server.host + ':' + config.server.port + '/1';
+  id = Math.floor(Math.random() * 10000000000);
+  return 'http://' + config.server.host + ':' + config.server.port + '/receive/' + id;
 }
 
 function addSender(url, client) {
@@ -164,7 +170,8 @@ function startTransferring(url, content) {
     receiver.send(JSON.stringify({
       type: 'transferStarted',
       content: {
-        contentType: content.contentType
+        contentType: content.contentType,
+        contentSize: content.contentSize
       }
     }));
   }

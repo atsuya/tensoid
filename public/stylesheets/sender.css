@@ -1,0 +1,44 @@
+#container {
+  margin: 50px auto;
+  /*background-color: #999999;*/
+  width: 700px;
+}
+
+#title {
+  color: #333;
+  font-size: 38px;
+  font-weight: 300;
+  height: 40px;
+}
+
+#dropArea {
+  background-color: #A7DBD8;
+  -webkit-border-radius: 30px;
+  -moz-border-radius: 30px;
+  border-radius: 30px;
+  height: 200px;
+  margin-top: 50px;
+  -webkit-transition: background 1s ease;
+  -moz-transition: background 1s ease;
+  -o-transition: background 1s ease;
+  transition: background 1s ease;  
+}
+
+#dropAreaText {
+  width: 600px;
+  height: 50px;
+  margin: auto;
+  color: /*#E0E4CC*/#7A6A53;
+  font-size: 30px;
+  font-weight: 300;
+  text-align: center;
+  padding-top: 80px;
+}
+
+#dropArea:hover {
+  background-color: #69D2E7;
+}
+
+.progressBar {
+  margin-top: 50px;
+}
