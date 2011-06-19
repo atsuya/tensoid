@@ -91,7 +91,6 @@ if (!module.parent) {
   console.log('tensoid is rocking on ' + config.server.host + ':' + config.server.port + '!');
 }
 
-var test = '';
 var connections = {};
 var listener = socketio.listen(app, { transports: ['websocket'] }); 
 listener.on('connection', function(client) {
@@ -114,11 +113,9 @@ listener.on('connection', function(client) {
       startTransferring(message.content.url, message.content);
     } else if (message.type === 'transferringData') {
       transferData(message.content.url, message.content);
-      test += message.content.data;
     } else if (message.type === 'transferEnded') {
       endTransferring(message.content.url, message.content);
-
-      //console.log(test);
+      delete connections[message.content.url];
     } else if (message.type === 'transferringDataOk') {
       var session = connections[message.content.url].sender;
       var sender = listener.clients[session];
