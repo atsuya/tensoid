@@ -85,6 +85,23 @@ app.get('/receive/:id', function(req, res) {
   res.render('receiver');
 });
 
+app.error(function(err, req, res) {
+  res.send('oops, something went wrong.');
+});
+
+process.on('SIGINT', function () {
+    console.log('shutting down!');
+    shutdown();
+});
+
+process.on('uncaughtException', function(err) {
+  log.error(err);
+});
+
+function shutdown() {
+  process.exit(0);
+}
+
 // Only listen on $ node app.js
 
 if (!module.parent) {
@@ -218,13 +235,4 @@ function endTransferring(url, content) {
       type: 'transferEnded'
     }));
   }
-}
-
-process.on('SIGINT', function () {
-    console.log('shutting down!');
-    shutdown();
-});
-
-function shutdown() {
-  process.exit(0);
 }
