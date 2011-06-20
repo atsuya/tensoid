@@ -1,6 +1,6 @@
 # tensoid: sendoid without flash
 
-`tensoid` is a technical attempt to do what sendoid does without flash.
+`tensoid` is a technical attempt to do what [http://sendoid.com/](sendoid) does without flash.
 
 
 ## How to use
@@ -14,9 +14,9 @@ browser to the someone's browser in realtime.
 ## Notes
 
 Technically, `tensoid` does not do exactly how sendoid does its file transfer.
-Sendoid uses flash and flash actually allows P2P communications among web
-browsers, but `tensoid` is sending a chunk to server and the server sends it to
-receiver.
+Sendoid uses flash and flash actually allows to do P2P communications among web
+browsers. However, `tensoid` sends a chunk to server and the server sends it to
+receiver. But you know, it doesn't use flash!
 
 
 ## Demo
@@ -28,6 +28,12 @@ To run your own `tensoid`, just git clone this repository and run:
 Modify config.js to fit it to your environment.
 
 Or try running demo at [http://tensoid.pictshare.me](http://tensoid.pictshare.me).
+
+
+# Credits
+
+Sendoid for a procedure to initiate file transfer (set file, get url, and let
+receiver access it).
 
 
 ## License
