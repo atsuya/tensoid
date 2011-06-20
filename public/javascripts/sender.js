@@ -7,6 +7,7 @@ var file = null;
 var test = '';
 var totalFile = '';
 var readyToDraw = false;
+var fileSizeLimit = 10000000;
 
 $(document).ready(function() {
   var dropArea = document.getElementById('dropArea');
@@ -41,11 +42,14 @@ function handleDrop(e) {
   //console.log(e);
 
   filesToSend = e.dataTransfer.files;
-
-  if (socket) {
-    socket.send(JSON.stringify({
-      type: 'urlRequest'
-    }));
+  if (filesToSend[0].size > fileSizeLimit) {
+    alert('Please try with file < 10MB');
+  } else {
+    if (socket) {
+      socket.send(JSON.stringify({
+        type: 'urlRequest'
+      }));
+    }
   }
 
   return false;
