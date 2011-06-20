@@ -18,6 +18,10 @@ Sendoid uses flash and flash actually allows to do P2P communications among web
 browsers. However, `tensoid` sends a chunk to server and the server sends it to
 receiver. But you know, it doesn't use flash!
 
+Other thing is a name of file downloaded. At the moment, it tries to download
+with some weird name without file extension. You should rename the name,
+especially the file extension to use it with appropriate application.
+
 
 ## Demo
 
