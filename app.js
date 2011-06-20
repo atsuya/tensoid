@@ -3,10 +3,13 @@
  * Module dependencies.
  */
 
+var fs = require('fs');
 var express = require('express');
 var socketio = require('socket.io');
+var Log = require('log');
 var config = require('./config');
 
+var log = new Log(Log.DEBUG, fs.createWriteStream('./logs/transferrings.log'));
 var app = module.exports = express.createServer();
 
 // Configuration
@@ -15,7 +18,7 @@ app.configure(function() {
   app.redirect('send', '/send');
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
-  app.use(express.logger());
+  //app.use(express.logger());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(express.cookieParser());
@@ -69,8 +72,6 @@ app.get('/send', function(req, res) {
 });
 
 app.get('/receive/:id', function(req, res) {
-  console.log(req);
-
   req.session.resources = [
     { type: 'javascript', uri: '/socket.io/socket.io.js' },
     { type: 'css', uri: '/stylesheets/receiver.css' },
@@ -106,16 +107,40 @@ listener.on('connection', function(client) {
       }));
 
       addSender(url, client);
+
+      log.debug(
+        '[%s]: action=urlRequest, from=%s',
+        url,
+        client.connection.remoteAddress
+      );
     } else if (message.type === 'receiverConnected') {
       addReceiver(message.content.url, client);
       requestTransferring(message.content.url);
+
+      log.debug(
+        '[%s]: action=receiverConnected, from=%s',
+        message.content.url,
+        client.connection.remoteAddress
+      );
     } else if (message.type === 'transferStarted') {
       startTransferring(message.content.url, message.content);
+
+      log.debug(
+        '[%s]: action=transferStarted, from=%s',
+        message.content.url,
+        client.connection.remoteAddress
+      );
     } else if (message.type === 'transferringData') {
       transferData(message.content.url, message.content);
     } else if (message.type === 'transferEnded') {
       endTransferring(message.content.url, message.content);
       delete connections[message.content.url];
+
+      log.debug(
+        '[%s]: action=transferEnded, from=%s',
+        message.content.url,
+        client.connection.remoteAddress
+      );
     } else if (message.type === 'transferringDataOk') {
       var session = connections[message.content.url].sender;
       var sender = listener.clients[session];
@@ -149,8 +174,6 @@ function addReceiver(url, client) {
 }
 
 function requestTransferring(url) {
-  console.log(connections);
-
   if (url in connections) {
     var sessionId = connections[url].sender;
     var sender = listener.clients[sessionId];

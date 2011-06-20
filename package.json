@@ -1,0 +1,20 @@
+{
+  "author": "Atsuya Takagi <atsuya.takagi@gmail.com> (http://github.com/atsuya)",
+  "name": "tensoid",
+  "version": "v0.1.0",
+  "description": "file transferring using web browsers.",
+  "repository": {
+    "url": ""
+  },
+  "engines": {
+    "node": "0.4.8"
+  },
+  "dependencies": {
+    "express": "*",
+    "ejs": "*",
+    "socket.io": "*",
+    "log": "*"
+  },
+  "devDependencies": {},
+  "private": true
+}
