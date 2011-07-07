@@ -111,7 +111,8 @@ if (!module.parent) {
 }
 
 var connections = {};
-var io = socketio.listen(app, { transports: ['websocket'] }); 
+var io = socketio.listen(app, { transports: ['websocket'] });
+io.set('log level', 1);
 io.sockets.on('connection', function(socket) {
   socket.on('urlRequest', function(message) {
     var url = generateUrl();
