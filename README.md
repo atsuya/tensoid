@@ -3,7 +3,12 @@
 `tensoid` is a technical attempt to do what [http://sendoid.com/](sendoid) does without flash.
 
 
-## How to use
+## How to Install
+
+Clone this git repo and do `npm install`. The usual node stuff.
+
+
+## How to Use
 
 Access `tendoid` and drag and drop some file, and you'll get an URL. Tell this
 URL to someone you want to share the file with. Make sure you are still on the
@@ -11,16 +16,10 @@ page when the someone opens the URL. That initiates a file transfer from your
 browser to the someone's browser in realtime.
 
 
-## Notes
+## Web Browsers
 
-Technically, `tensoid` does not do exactly how sendoid does its file transfer.
-Sendoid uses flash and flash actually allows to do P2P communications among web
-browsers. However, `tensoid` sends a chunk to server and the server sends it to
-receiver. But you know, it doesn't use flash!
-
-Other thing is a name of file downloaded. At the moment, it tries to download
-with some weird name without file extension. You should rename the name,
-especially the file extension to use it with appropriate application.
+Currently, `tensoid` only works with Chrome. I'm using webkit-prefixed
+functions :p I'm planning to make it work with decent web browsers.
 
 
 ## Demo
@@ -32,6 +31,18 @@ To run your own `tensoid`, just git clone this repository and run:
 Modify config.js to fit it to your environment.
 
 Or try running demo at [http://tensoid.pictshare.me](http://tensoid.pictshare.me).
+
+
+## Notes
+
+Technically, `tensoid` does not do exactly how sendoid does its file transfer.
+Sendoid uses flash and flash actually allows P2P communications among web
+browsers, but `tensoid` is sending a chunk to server and the server sends it to
+receiver.
+
+Other thing is a name of file downloaded. At the moment, it tries to download
+with some weird name without file extension. You should rename the name,
+especially the file extension to use it with appropriate application.
 
 
 # Credits
@@ -46,7 +57,7 @@ receiver access it).
 
 The MIT License
 
-Copyright (c) 2011 Atsuya Takagi
+Copyright (c) 2011 Atsuya Takagi <atsuya.takagi@gmail.com> 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

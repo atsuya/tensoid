@@ -46,9 +46,7 @@ function handleDrop(e) {
     alert('Please try with file < 10MB');
   } else {
     if (socket) {
-      socket.send(JSON.stringify({
-        type: 'urlRequest'
-      }));
+      socket.emit('urlRequest');
     }
   }
 
@@ -61,9 +59,7 @@ function handleDragEnd(e) {
   filesToSend = e.target.files;
 
   if (socket) {
-    socket.send(JSON.stringify({
-      type: 'urlRequest'
-    }));
+    socket.emit('urlRequest');
   }
 }
 
@@ -71,14 +67,11 @@ function readFile(file) {
   //console.log(file);
 
   if (socket) {
-    socket.send(JSON.stringify({
-      type: 'transferStarted',
-      content: {
-        url: url,
-        contentType: file.type,
-        contentSize: file.size
-      }
-    }));
+    socket.emit('transferStarted', {
+      url: url,
+      contentType: file.type,
+      contentSize: file.size
+    });
   }
 
   blobCurrentPosition = 0;
@@ -101,12 +94,7 @@ function readBlob(reader, file) {
 
   if (blobCurrentPosition >= (file.size - 1)) {
     if (socket) {
-      socket.send(JSON.stringify({
-        type: 'transferEnded',
-        content: {
-          url: url
-        }
-      }));
+      socket.emit('transferEnded', { url: url });
     }
 
     $('#progressBar').hide();
@@ -135,13 +123,7 @@ function readBlob(reader, file) {
 
       var base64 = window.btoa(event.target.result);
       if (socket) {
-        socket.send(JSON.stringify({
-          type: 'transferringData',
-          content: {
-            url: url,
-            data: base64
-          }
-        }));
+        socket.emit('transferringData', { url: url, data: base64 });
       }
 
       test += base64;
@@ -154,35 +136,27 @@ function readBlob(reader, file) {
 }
 
 function setUpWebSocket() {
-  socket = new io.Socket(
+  socket = new io.connect(
     webSocketHost,
     { port: webSocketPort, transports: ['websocket'] }
-  ); 
-  socket.on('connect', handleWebSocketConnect); 
-  socket.on('message', handleWebSocketMessage); 
-  socket.connect();
-}
-
-function handleWebSocketConnect() {
-}
-
-function handleWebSocketMessage(data) {
-  var message = JSON.parse(data);
-  if (message.type === 'urlRequest') {
+  );  
+  socket.on('urlRequest', function(message) {
     //console.log('url: ' + message.content.url);
-    url = message.content.url;
+    url = message.url;
 
     $('#dropAreaText').text(url);
-  } else if (message.type === 'transferRequest') {
+  });
+  socket.on('transferRequest', function() {
     //console.log('oh yea, ready to send file!');
     $('#dropArea').hide();
     $('#progressBar').show();
 
     transferFiles();
-  } else if (message.type === 'transferringData') {
+  });
+  socket.on('transferringData', function() {
     //console.log('sending more.');
     readBlob(null, file);
-  }
+  });
 }
 
 function transferFiles() {
@@ -195,12 +169,7 @@ function transferFiles() {
 function sendBytes() {
   if (blobCurrentPosition >= totalFile.length) {
     if (socket) {
-      socket.send(JSON.stringify({
-        type: 'transferEnded',
-        content: {
-          url: url
-        }
-      }));
+      socket.emit('transferEnded', { url: url });
     }
     return;
   }
@@ -211,13 +180,10 @@ function sendBytes() {
   }
 
   if (socket) {
-    socket.send(JSON.stringify({
-      type: 'transferringData',
-      content: {
-        url: url,
-        data: totalFile.substring(blobCurrentPosition, end)
-      }
-    }));
+    socket.emit('transferringData', {
+      url: url,
+      data: totalFile.substring(blobCurrentPosition, end)
+    });
 
     blobCurrentPosition = end;
   }
