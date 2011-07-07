@@ -3,6 +3,7 @@
  * Module dependencies.
  */
 
+var sys = require('sys');
 var fs = require('fs');
 var express = require('express');
 var socketio = require('socket.io');
@@ -93,63 +94,57 @@ if (!module.parent) {
 }
 
 var connections = {};
-var listener = socketio.listen(app, { transports: ['websocket'] }); 
-listener.on('connection', function(client) {
-  client.on('message', function(data) {
-    var message = JSON.parse(data);
-    if (message.type === 'urlRequest') {
-      var url = generateUrl();
-      client.send(JSON.stringify({
-        type: 'urlRequest',
-        content: {
-          url: url
-        }
-      }));
+var io = socketio.listen(app, { transports: ['websocket'] }); 
+io.sockets.on('connection', function(socket) {
+  socket.on('urlRequest', function(message) {
+    var url = generateUrl();
+    socket.emit('urlRequest', { url: url });
+    addSender(url, socket);
 
-      addSender(url, client);
-
-      log.debug(
-        '[%s]: action=urlRequest, from=%s',
-        url,
-        client.connection.remoteAddress
-      );
-    } else if (message.type === 'receiverConnected') {
-      addReceiver(message.content.url, client);
-      requestTransferring(message.content.url);
-
-      log.debug(
-        '[%s]: action=receiverConnected, from=%s',
-        message.content.url,
-        client.connection.remoteAddress
-      );
-    } else if (message.type === 'transferStarted') {
-      startTransferring(message.content.url, message.content);
-
-      log.debug(
-        '[%s]: action=transferStarted, from=%s',
-        message.content.url,
-        client.connection.remoteAddress
-      );
-    } else if (message.type === 'transferringData') {
-      transferData(message.content.url, message.content);
-    } else if (message.type === 'transferEnded') {
-      endTransferring(message.content.url, message.content);
-      delete connections[message.content.url];
-
-      log.debug(
-        '[%s]: action=transferEnded, from=%s',
-        message.content.url,
-        client.connection.remoteAddress
-      );
-    } else if (message.type === 'transferringDataOk') {
-      var session = connections[message.content.url].sender;
-      var sender = listener.clients[session];
-      sender.send(JSON.stringify({
-        type: 'transferringData'
-      }));
-    }
+    log.debug(
+      '[%s]: action=urlRequest, from=%s',
+      url,
+      socket.handshake.address.address
+    );
   });
-  client.on('disconnect', function() {
+  socket.on('receiverConnected', function(message) {
+    addReceiver(message.url, socket);
+    requestTransferring(message.url);
+
+    log.debug(
+      '[%s]: action=receiverConnected, from=%s',
+      message.url,
+      socket.handshake.address.address
+    );
+  });
+  socket.on('transferStarted', function(message) {
+    startTransferring(message.url, message);
+
+    log.debug(
+      '[%s]: action=transferStarted, from=%s',
+      message.url,
+      socket.handshake.address.address
+    );
+  });
+  socket.on('transferringData', function(message) {
+    transferData(message.url, message);
+  });
+  socket.on('transferEnded', function(message) {
+    endTransferring(message.url, message);
+    delete connections[message.url];
+
+    log.debug(
+      '[%s]: action=transferEnded, from=%s',
+      message.url,
+      socket.handshake.address.address
+    );
+  });
+  socket.on('transferringDataOk', function(message) {
+    var session = connections[message.url].sender;
+    var sender = io.sockets.socket(session);
+    sender.emit('transferringData');
+  });
+  socket.on('disconnect', function() {
   });
 });
 
@@ -158,65 +153,53 @@ function generateUrl() {
   return 'http://' + config.server.host + ':' + config.server.port + '/receive/' + id;
 }
 
-function addSender(url, client) {
+function addSender(url, socket) {
   if (!(url in connections)) {
     connections[url] = {
-      sender: client.sessionId,
+      sender: socket.id,
       receivers: []
     };
   }
 }
 
-function addReceiver(url, client) {
+function addReceiver(url, socket) {
   if (url in connections) {
-    connections[url].receivers.push(client.sessionId);
+    connections[url].receivers.push(socket.id);
   }
 }
 
 function requestTransferring(url) {
   if (url in connections) {
-    var sessionId = connections[url].sender;
-    var sender = listener.clients[sessionId];
-    sender.send(JSON.stringify({
-      type: 'transferRequest'
-    }));
+    var socketId = connections[url].sender;
+    var sender = io.sockets.socket(socketId);
+    sender.emit('transferRequest');
   }
 }
 
 function startTransferring(url, content) {
   if (url in connections) {
-    var sessionId = connections[url].receivers[0];
-    var receiver = listener.clients[sessionId];
-    receiver.send(JSON.stringify({
-      type: 'transferStarted',
-      content: {
+    var socketId = connections[url].receivers[0];
+    var receiver = io.sockets.socket(socketId);
+    receiver.emit('transferStarted', {
         contentType: content.contentType,
         contentSize: content.contentSize
-      }
-    }));
+    });
   }
 }
 
 function transferData(url, content) {
   if (url in connections) {
-    var sessionId = connections[url].receivers[0];
-    var receiver = listener.clients[sessionId];
-    receiver.send(JSON.stringify({
-      type: 'transferringData',
-      content: {
-        data: content.data
-      }
-    }));
+    var socketId = connections[url].receivers[0];
+    var receiver = io.sockets.socket(socketId);
+    receiver.emit('transferringData', { data: content.data });
   }
 }
 
 function endTransferring(url, content) {
   if (url in connections) {
-    var sessionId = connections[url].receivers[0];
-    var receiver = listener.clients[sessionId];
-    receiver.send(JSON.stringify({
-      type: 'transferEnded'
-    }));
+    var socketId = connections[url].receivers[0];
+    var receiver = io.sockets.socket(socketId);
+    receiver.emit('transferEnded');
   }
 }
 

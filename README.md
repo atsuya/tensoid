@@ -2,8 +2,12 @@
 
 `tensoid` is a technical attempt to do what sendoid does without flash.
 
+## How to Install
 
-## How to use
+Clone this git repo and run `npm install`. Usual node stuff.
+
+
+## How to Use
 
 Access `tendoid` and drag and drop some file, and you'll get an URL. Tell this
 URL to someone you want to share the file with. Make sure you are still on the
@@ -11,13 +15,10 @@ page when the someone opens the URL. That initiates a file transfer from your
 browser to the someone's browser in realtime.
 
 
-## Notes
+## Web Browsers
 
-Technically, `tensoid` does not do exactly how sendoid does its file transfer.
-Sendoid uses flash and flash actually allows P2P communications among web
-browsers, but `tensoid` is sending a chunk to server and the server sends it to
-receiver.
-
+Currently, `tensoid` only works with Chrome. I'm using webkit-prefixed
+functions :p I'm planning to make it work with decent web browsers.
 
 ## Demo
 
@@ -28,6 +29,14 @@ To run your own `tensoid`, just git clone this repository and run:
 Modify config.js to fit it to your environment.
 
 Or try running demo at [http://tensoid.pictshare.me](http://tensoid.pictshare.me).
+
+
+## Notes
+
+Technically, `tensoid` does not do exactly how sendoid does its file transfer.
+Sendoid uses flash and flash actually allows P2P communications among web
+browsers, but `tensoid` is sending a chunk to server and the server sends it to
+receiver.
 
 
 ## License

@@ -15,37 +15,24 @@ $(document).ready(function() {
 });
 
 function setUpWebSocket() {
-  socket = new io.Socket(
+  socket = new io.connect(
     webSocketHost,
     { port: webSocketPort, transports: ['websocket'] }
-  ); 
-  socket.on('connect', handleWebSocketConnect); 
-  socket.on('message', handleWebSocketMessage); 
-  socket.connect();
-}
-
-function handleWebSocketConnect() {
-}
-
-function handleWebSocketMessage(data) {
-  var message = JSON.parse(data);
-  if (message.type === 'urlRequest') {
-    //console.log('url: ' + message.content.url);
-  } else if (message.type === 'transferStarted') {
-    //console.log('transferStarted');
-
-    contentType = message.content.contentType;
-    contentSize = message.content.contentSize;
+  );
+  socket.on('transferStarted', function(message) {
+    contentType = message.contentType;
+    contentSize = message.contentSize;
 
     readyToDraw = true;
     $('#progressBar').show();
     $('#progressBar').progressbar('value', 0);
-  } else if (message.type === 'transferringData') {
+  });
+  socket.on('transferringData', function(message) {
     //console.log('transferringData');
 
     //console.log(message.content.data);
 
-    transferredData = transferredData + '' + message.content.data;
+    transferredData = transferredData + '' + message.data;
 
     if (readyToDraw) {
       readyToDraw = false;
@@ -61,14 +48,10 @@ function handleWebSocketMessage(data) {
 
     //console.log('give me more!');
     if (socket) {
-      socket.send(JSON.stringify({
-        type: 'transferringDataOk',
-        content: {
-          url: requestUrl
-        }
-      }));
+      socket.emit('transferringDataOk', { url: requestUrl });
     }
-  } else if (message.type === 'transferEnded') {
+  });
+  socket.on('transferEnded', function(message) {
     //console.log('transferEnded');
 
     //console.log(contentType);
@@ -93,16 +76,11 @@ function handleWebSocketMessage(data) {
     $('#progressBar').hide();
     $('#dropArea').show();
     $('#dropAreaText').append($image);
-  }
+  });
 }
 
 function notifySender() {
   if (socket) {
-    socket.send(JSON.stringify({
-      type: 'receiverConnected',
-      content: {
-        url: requestUrl
-      }
-    }));
+    socket.emit('receiverConnected', { url: requestUrl });
   }
 }
