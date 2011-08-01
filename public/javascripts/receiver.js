@@ -63,10 +63,9 @@ function setUpWebSocket() {
       view[i] = binary.charCodeAt(i);
     }
     
-
-    var blobBuilder = new WebKitBlobBuilder();
+    var blobBuilder = window.WebKitBlobBuilder ? new WebKitBlobBuilder() : new MozBlobBuilder();
     blobBuilder.append(buffer);
-    var blobUrl = window.webkitURL.createObjectURL(blobBuilder.getBlob());
+    var blobUrl = window.webkitURL ? window.webkitURL.createObjectURL(blobBuilder.getBlob()) : window.URL.createObjectURL(blobBuilder.getBlob());
     //console.log('url: '+blobUrl);
 
     $image = $(document.createElement('a'));
