@@ -61,6 +61,7 @@ app.get('/', function(req, res) {
 
 app.get('/send', function(req, res) {
   req.session.resources = [
+    { type: 'javascript', uri: '/libraries/file-iterator/file-iterator.js' },
     { type: 'javascript', uri: '/socket.io/socket.io.js' },
     { type: 'css', uri: '/stylesheets/sender.css' },
     { type: 'javascript', uri: '/javascripts/sender.js' }

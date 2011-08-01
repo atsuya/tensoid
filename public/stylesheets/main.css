@@ -2,6 +2,15 @@ body {
   background-color: #f1f5f1;
 }
 
+#browserMessage {
+  padding: 15px;
+  background-color: #FBB829;
+  border: 2px solid #e1a524;
+  text-align: center;
+  font-size: 30px;
+  color: #333;
+}
+
 /*
 .ui-progressbar-value {
   background-image: url(/libraries/jquery-ui/css/smoothness/images/pbar-ani.gif);

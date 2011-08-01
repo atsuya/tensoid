@@ -45,7 +45,7 @@ with some weird name without file extension. You should rename the name,
 especially the file extension to use it with appropriate application.
 
 
-# Credits
+## Credits
 
 Sendoid for a procedure to initiate file transfer (set file, get url, and let
 receiver access it).

@@ -1,19 +1,16 @@
-var filesToSend = [];
 var socket = null;
 var url = null;
-var blobCurrentPosition = 0;
-var BLOB_SIZE = (3 * 10240) - 1;
-var file = null;
 var test = '';
 var totalFile = '';
 var readyToDraw = false;
 var fileSizeLimit = 10000000;
+var fileIterator = null;
 
 $(document).ready(function() {
   var dropArea = document.getElementById('dropArea');
   dropArea.addEventListener('dragover', handleDragOver, false);
   dropArea.addEventListener('drop', handleDrop, false);
-  dropArea.addEventListener('dragend', handleDragEnd, false);
+  //dropArea.addEventListener('dragend', handleDragEnd, false);
 
   $('#dropAreaText').text('Drop File Here!');
 
@@ -24,115 +21,28 @@ $(document).ready(function() {
 });
 
 function handleDragOver(e) {
-  if (e.preventDefault) {
-    e.preventDefault();
-  }
-  return false;
+  e.stopPropagation();
+  e.preventDefault();
 }
 
 function handleDrop(e) {
-  //console.log('handleDrop');
+  e.stopPropagation()
+  e.preventDefault();
 
-  if (e.stopPropagation) {
-    e.stopPropagation();
-  }
-
-  //console.log('handleDragEnd');
-
-  //console.log(e);
-
-  filesToSend = e.dataTransfer.files;
+  var filesToSend = e.dataTransfer.files;
   if (filesToSend[0].size > fileSizeLimit) {
     alert('Please try with file < 10MB');
   } else {
-    if (socket) {
-      socket.emit('urlRequest');
-    }
-  }
+    if (fileIterator) {
+      alert('Reload the page to initiate new upload!');
+    } else {
+      fileIterator = new FileIterator(filesToSend[0]);
 
-  return false;
-}
-
-function handleDragEnd(e) {
-  //console.log('handleDragEnd');
-
-  filesToSend = e.target.files;
-
-  if (socket) {
-    socket.emit('urlRequest');
-  }
-}
-
-function readFile(file) {
-  //console.log(file);
-
-  if (socket) {
-    socket.emit('transferStarted', {
-      url: url,
-      contentType: file.type,
-      contentSize: file.size
-    });
-  }
-
-  blobCurrentPosition = 0;
-  readyToDraw = true;
-  readBlob(null, file);
-}
-
-function readBlob(reader, file) {
-  if (readyToDraw) {
-    readyToDraw = false;
-
-    progress = (blobCurrentPosition / file.size) * 100;
-    //console.log(progress);
-
-    window.setTimeout(function() {
-      $('#progressBar').progressbar('value', progress);
-      readyToDraw = true;
-    }, 500);
-  }
-
-  if (blobCurrentPosition >= (file.size - 1)) {
-    if (socket) {
-      socket.emit('transferEnded', { url: url });
-    }
-
-    $('#progressBar').hide();
-    $('#dropArea').show();
-    $('#dropAreaText').text('Done!');
-
-    return;
-  }
-
-  var end = (blobCurrentPosition + BLOB_SIZE + 1);
-  if (file.size < end) {
-    end = file.size;
-  }
-  //console.log('s: '+blobCurrentPosition+', e: '+end);
-  //var length = (end - blobCurrentPosition) + 1;
-  var blob = file.webkitSlice(blobCurrentPosition, end, 'application/octet-stream');
-  //reader.readAsDataURL(blob);
-  
-  var reader2 = new FileReader();
-  reader2.onloadend = function(event) {
-    //console.log('here');
-    if (event.target.readyState == FileReader.DONE) {
-      //console.log('reading: '+blobCurrentPosition+'/'+file.size);
-      //console.log('mod: '+(event.target.result.length % 3));
-      //console.log(event);
-
-      var base64 = window.btoa(event.target.result);
       if (socket) {
-        socket.emit('transferringData', { url: url, data: base64 });
+        socket.emit('urlRequest');
       }
-
-      test += base64;
-
-
-      blobCurrentPosition += BLOB_SIZE + 1;
     }
-  };
-  reader2.readAsBinaryString(blob);
+  }
 }
 
 function setUpWebSocket() {
@@ -155,36 +65,54 @@ function setUpWebSocket() {
   });
   socket.on('transferringData', function() {
     //console.log('sending more.');
-    readBlob(null, file);
+    iterateFile();
   });
 }
 
 function transferFiles() {
-  for (var i = 0; i < filesToSend.length; i++) {
-    file = filesToSend[i];
-    readFile(filesToSend[i]);
+  if (socket) {
+    socket.emit('transferStarted', {
+      url: url,
+      contentType: fileIterator.file.type,
+      contentSize: fileIterator.file.size
+    });
   }
+
+  readToDraw = true;
+  iterateFile();
 }
 
-function sendBytes() {
-  if (blobCurrentPosition >= totalFile.length) {
+function iterateFile() {
+  fileIterator.read(fileRead);
+}
+
+function fileRead(error, response) {
+  if (readyToDraw) {
+    readyToDraw = false;
+
+    progress = (fileIterator.currentPosition / fileIterator.file.size) * 100;
+    //console.log(progress);
+
+    window.setTimeout(function() {
+      $('#progressBar').progressbar('value', progress);
+      readyToDraw = true;
+    }, 500);
+  }
+
+  if (response.done) {
     if (socket) {
       socket.emit('transferEnded', { url: url });
     }
+
+    $('#progressBar').hide();
+    $('#dropArea').show();
+    $('#dropAreaText').text('Done!');
+
     return;
   }
-  
-  var end = (blobCurrentPosition + BLOB_SIZE);
-  if (end >= totalFile.length) {
-    end = totalFile.length;
-  }
 
+  var base64 = window.btoa(response.data);
   if (socket) {
-    socket.emit('transferringData', {
-      url: url,
-      data: totalFile.substring(blobCurrentPosition, end)
-    });
-
-    blobCurrentPosition = end;
+    socket.emit('transferringData', { url: url, data: base64 });
   }
 }
