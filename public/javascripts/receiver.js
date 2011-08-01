@@ -70,12 +70,41 @@ function setUpWebSocket() {
     //console.log('url: '+blobUrl);
 
     $image = $(document.createElement('a'));
+    $image.attr('id', 'receivedFile');
     $image.text('File is Here!');
     $image.attr('href', blobUrl);
+    // data-downloadurl="MIMETYPE:FILENAME:ABSOLUTE_URI_TO_FILE
+    /*
+    blobParts = blobUrl.split(':');
+    blobUrl = blobParts[0];
+    for(var i = 1; i < blobParts.length; i++) {
+      if (i === 1) {
+        blobUrl += ':';
+      } else {
+        blobUrl += '\\:';
+      }
+      blobUrl += blobParts[i];
+    }
+    console.log(blobUrl);
+    $image.attr('data-downloadurl', 'application/octet-stream:test.mp3:'+blobUrl);
+    */
 
     $('#progressBar').hide();
     $('#dropArea').show();
     $('#dropAreaText').append($image);
+
+    /*
+    // drag out sutff
+    var dragOutElement = document.getElementById('receivedFile');
+    dragOutElement.addEventListener('dragstart', function(event) {
+        console.log(this.dataset.downloadurl);
+        //console.log(binary);
+        event.dataTransfer.setData('DownloadURL', this.dataset.downloadurl);
+        //event.dataTransfer.setData('application/octet-stream', binary);
+      },
+      false
+    );
+    */
   });
 }
 
