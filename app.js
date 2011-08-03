@@ -200,8 +200,9 @@ function startTransferring(url, content) {
     var socketId = connections[url].receivers[0];
     var receiver = io.sockets.socket(socketId);
     receiver.emit('transferStarted', {
-        contentType: content.contentType,
-        contentSize: content.contentSize
+      contentType: content.contentType,
+      fileSize: content.fileSize,
+      fileName: content.fileName
     });
   }
 }

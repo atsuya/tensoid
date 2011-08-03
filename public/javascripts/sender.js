@@ -74,7 +74,8 @@ function transferFiles() {
     socket.emit('transferStarted', {
       url: url,
       contentType: fileIterator.file.type,
-      contentSize: fileIterator.file.size
+      fileSize: fileIterator.file.size,
+      fileName: fileIterator.file.name
     });
   }
 

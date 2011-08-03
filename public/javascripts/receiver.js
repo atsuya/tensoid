@@ -1,7 +1,8 @@
 var socket = null;
 var transferredData = '';
 var contentType = '';
-var contentSize = 0;
+var fileSize = '';
+var fileName = '';
 var readyToDraw = false;
 
 $(document).ready(function() {
@@ -21,7 +22,8 @@ function setUpWebSocket() {
   );
   socket.on('transferStarted', function(message) {
     contentType = message.contentType;
-    contentSize = message.contentSize;
+    fileSize = message.fileSize;
+    fileName = message.fileName;
 
     readyToDraw = true;
     $('#progressBar').show();
@@ -37,7 +39,7 @@ function setUpWebSocket() {
     if (readyToDraw) {
       readyToDraw = false;
 
-      progress = (transferredData.length / contentSize) * 100;
+      progress = (transferredData.length / fileSize) * 100;
       //console.log(progress);
 
       window.setTimeout(function() {
@@ -66,44 +68,29 @@ function setUpWebSocket() {
     var blobBuilder = window.WebKitBlobBuilder ? new WebKitBlobBuilder() : new MozBlobBuilder();
     blobBuilder.append(buffer);
     var blobUrl = window.webkitURL ? window.webkitURL.createObjectURL(blobBuilder.getBlob()) : window.URL.createObjectURL(blobBuilder.getBlob());
-    //console.log('url: '+blobUrl);
 
-    $image = $(document.createElement('a'));
-    $image.attr('id', 'receivedFile');
-    $image.text('File is Here!');
-    $image.attr('href', blobUrl);
-    // data-downloadurl="MIMETYPE:FILENAME:ABSOLUTE_URI_TO_FILE
-    /*
-    blobParts = blobUrl.split(':');
-    blobUrl = blobParts[0];
-    for(var i = 1; i < blobParts.length; i++) {
-      if (i === 1) {
-        blobUrl += ':';
-      } else {
-        blobUrl += '\\:';
-      }
-      blobUrl += blobParts[i];
-    }
-    console.log(blobUrl);
-    $image.attr('data-downloadurl', 'application/octet-stream:test.mp3:'+blobUrl);
-    */
+    $link = $(document.createElement('a'));
+    $link.attr('id', 'receivedFile');
+    //$link.text('Download!');
+    $link.attr('data-downloadurl', contentType + ':' + fileName + ':' + blobUrl);
+    $link.attr('href', blobUrl);
+
+    $image = $(document.createElement('img'));
+    $image.attr('src', '/images/file.png');
+    $link.append($image);
 
     $('#progressBar').hide();
     $('#dropArea').show();
-    $('#dropAreaText').append($image);
+    $('#dropAreaText').append($link);
 
-    /*
     // drag out sutff
     var dragOutElement = document.getElementById('receivedFile');
     dragOutElement.addEventListener('dragstart', function(event) {
-        console.log(this.dataset.downloadurl);
-        //console.log(binary);
+        console.log(this.dataset);
         event.dataTransfer.setData('DownloadURL', this.dataset.downloadurl);
-        //event.dataTransfer.setData('application/octet-stream', binary);
       },
       false
     );
-    */
   });
 }
 
