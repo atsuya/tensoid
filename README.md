@@ -18,7 +18,7 @@ browser to the someone's browser in realtime.
 
 ## Web Browsers
 
-Currently, `tensoid` only works with Chrome. I'm using webkit-prefixed
+`tensoid` works on Chrome and Firefox (6 and probably later). I'm using webkit-prefixed
 functions :p I'm planning to make it work with decent web browsers.
 
 
