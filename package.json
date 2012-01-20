@@ -8,12 +8,12 @@
     "url": "https://github.com/atsuya/tensoid"
   },
   "engines": {
-    "node": "0.4.9"
+    "node": "0.6.8"
   },
   "dependencies": {
-    "express": "2.4.2",
+    "express": "2.5.2",
     "ejs": "0.4.3",
-    "socket.io": "0.8.4",
+    "socket.io": "0.8.7",
     "log": "1.2.0"
   },
   "devDependencies": {},
