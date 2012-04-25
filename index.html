@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Tensoid by atsuya</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Tensoid</h1>
+        <p>sendoid clone using websocket</p>
+        <p class="view"><a href="https://github.com/atsuya/tensoid">View the Project on GitHub <small>atsuya/tensoid</small></a></p>
+        <ul>
+          <li><a href="https://github.com/atsuya/tensoid/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/atsuya/tensoid/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/atsuya/tensoid">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>tensoid: sendoid without flash</h1>
+
+<p><code>tensoid</code> is a technical attempt to do what <a href="sendoid">http://sendoid.com/</a> does without flash.</p>
+
+<h2>How to Install</h2>
+
+<p>Clone this git repo and do <code>npm install</code>. The usual node stuff.</p>
+
+<h2>How to Use</h2>
+
+<p>Access <code>tendoid</code> and drag and drop some file, and you'll get an URL. Tell this
+URL to someone you want to share the file with. Make sure you are still on the
+page when the someone opens the URL. That initiates a file transfer from your
+browser to the someone's browser in realtime.</p>
+
+<h2>Web Browsers</h2>
+
+<p><code>tensoid</code> works on Chrome and Firefox (6 and probably later). I'm using webkit-prefixed
+functions :p I'm planning to make it work with decent web browsers.</p>
+
+<h2>Demo</h2>
+
+<p>To run your own <code>tensoid</code>, just git clone this repository and run:</p>
+
+<pre><code>$ node app.js
+</code></pre>
+
+<p>Modify config.js to fit it to your environment.</p>
+
+<p>Or try running demo at <a href="http://tensoid.pictshare.me">http://tensoid.pictshare.me</a>.</p>
+
+<h2>Notes</h2>
+
+<p>Technically, <code>tensoid</code> does not do exactly how sendoid does its file transfer.
+Sendoid uses flash and flash actually allows P2P communications among web
+browsers, but <code>tensoid</code> is sending a chunk to server and the server sends it to
+receiver.</p>
+
+<p>Other thing is a name of file downloaded. At the moment, it tries to download
+with some weird name without file extension. You should rename the name,
+especially the file extension to use it with appropriate application.</p>
+
+<h2>Credits</h2>
+
+<p>Sendoid for a procedure to initiate file transfer (set file, get url, and let
+receiver access it).</p>
+
+<h2>License</h2>
+
+<p><code>tensoid</code> is licensed under the MIT license.</p>
+
+<p>The MIT License</p>
+
+<p>Copyright (c) 2011 Atsuya Takagi <a href="mailto:atsuya.takagi@gmail.com">atsuya.takagi@gmail.com</a> </p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED ‘AS IS’, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/atsuya">atsuya</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
